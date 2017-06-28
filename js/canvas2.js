@@ -2,6 +2,17 @@
  * Created by Administrator on 2017/6/28.
  */
 (function () {
+
+    var clientflag = 0;
+    if (/AppleWebKit.*mobile/i.test(navigator.userAgent) || (/MIDP|SymbianOS|NOKIA|SAMSUNG|LG|NEC|TCL|Alcatel|BIRD|DBTEL|Dopod|PHILIPS|HAIER|LENOVO|MOT-|Nokia|SonyEricsson|SIE-|Amoi|ZTE/.test(navigator.userAgent))) {
+        if (window.location.href.indexOf("?mobile") < 0) {
+            clientflag = 1;//移动端
+        } else {
+            clientflag = 0;//pc端
+        }
+    }
+
+
     var canvas = document.getElementById('canvas');
     var context = canvas.getContext('2d');
     if (canvas.getContext) {
@@ -10,23 +21,28 @@
         console.log('不支持canvas');
     }
 
-    canvas.width = 1000;
-    canvas.height = 600;
+    if (clientflag == 0) {
+        canvas.width = 1000;
+        canvas.height = 600;
+    } else {
+        canvas.width = 300;
+        canvas.height = 400;
+    }
 
-    var dowmflag=0;
-    canvas.addEventListener('touchstart',touchStar);
-    canvas.addEventListener('touchmove',touchMove);
-    //canvas.addEventListener('touchend',touchEnd);
+    var dowmflag = 0;
+    canvas.addEventListener('touchstart', touchStar);
+    canvas.addEventListener('touchmove', touchMove);
+    canvas.addEventListener('touchend', stopdraw);
     canvas.onmousedown = touchStar;
     canvas.onmouseup = stopdraw;
 
     canvas.onmousemove = touchMove;
 
-    document.getElementById('savepic').onclick = function(){
+    document.getElementById('savepic').onclick = function () {
         var type = 'png';
         download(type);
     }
-//图片下载操作,指定图片类型
+    //图片下载操作,指定图片类型
     function download(type) {
         //设置保存图片的类型
         var imgdata = canvas.toDataURL(type);
@@ -50,50 +66,90 @@
         saveFile(imgdata, filename);
     }
 
-    function touchStar(e){
-        dowmflag = 1
-        // 取得鼠标位置
-        var x = e.pageX - canvas.offsetLeft;
-        var y = e.pageY - canvas.offsetTop;
-
-        drawDot(x,y);
+    var eraserflag = 0;
+    //监听eraser 和 brush
+    document.getElementById('eraser').onclick = function () {
+        eraserflag = 1;
+        brushflag = 0;
+    }
+    document.getElementById('brush').onclick = function () {
+        brushflag = 1;
+        eraserflag = 0;
     }
 
-    function stopdraw(e){
-        dowmflag=0;
+    function touchStar(e) {
+        dowmflag = 1;
+        var x, y;
+        // 取得鼠标位置
+        if (clientflag == 0) {
+            x = e.pageX - canvas.offsetLeft;
+            y = e.pageY - canvas.offsetTop;
+        } else {
+            x = e.touches[0].pageX - canvas.offsetLeft;
+            y = e.touches[0].pageY - canvas.offsetTop;
+        }
+
+
+        drawDot(x, y);
+    }
+
+    function stopdraw(e) {
+        dowmflag = 0;
         e.stopPropagation();
         e.preventDefault();
     }
 
-    function touchMove(e){
+    function touchMove(e) {
 
 
-        if(dowmflag == 1){
-            var x = e.pageX - canvas.offsetLeft;
-            var y = e.pageY - canvas.offsetTop;
-            drawDot(x,y);
+        if (dowmflag == 1) {
+            var x, y;
+            // 取得鼠标位置
+            if (clientflag == 0) {
+                x = e.pageX - canvas.offsetLeft;
+                y = e.pageY - canvas.offsetTop;
+            } else {
+                x = e.touches[0].pageX - canvas.offsetLeft;
+                y = e.touches[0].pageY - canvas.offsetTop;
+            }
+            drawDot(x, y);
         }
 
     }
 
-    function drawDot(x,y){
+    var linewidth=10;
+    function drawDot(x, y) {
         context.beginPath();
-        context.arc(x,y,10,0,2*Math.PI);
-        context.fillStyle= 'rgb('+getrandom1()+','+getrandom2()+','+getrandom3()+')';
+        if(eraserflag==1){
+            linewidth=20;
+        }else {
+            linewidth=10;
+        }
+        context.arc(x, y, linewidth, 0, 2 * Math.PI);
+        if(eraserflag==1){
+            context.fillStyle = 'rgb(255,255,255)';
+        }else{
+            context.fillStyle = 'rgb(' + getrandom1() + ',' + getrandom2() + ',' + getrandom3() + ')';
+        }
+
         context.fill();
         context.closePath();
     }
 
-    function getrandom1(){
-        var ss = Math.random()*255;
+    function getrandom1() {
+        var ss = Math.random() * 255;
         return Math.floor(ss);
     }
-    function getrandom2(){
-        var ss = Math.random()*255;
+
+    function getrandom2() {
+        var ss = Math.random() * 255;
         return Math.floor(ss);
     }
-    function getrandom3(){
-        var ss = Math.random()*255;
+
+    function getrandom3() {
+        var ss = Math.random() * 255;
         return Math.floor(ss);
     }
+
+
 })();
