@@ -10,14 +10,17 @@
         console.log('不支持canvas');
     }
 
-    canvas.width = 300;
-    canvas.height = 400;
+    canvas.width = 1000;
+    canvas.height = 600;
 
-    var starX,starY;
+    var dowmflag=0;
     canvas.addEventListener('touchstart',touchStar);
     canvas.addEventListener('touchmove',touchMove);
     //canvas.addEventListener('touchend',touchEnd);
+    canvas.onmousedown = touchStar;
+    canvas.onmouseup = stopdraw;
 
+    canvas.onmousemove = touchMove;
 
     document.getElementById('savepic').onclick = function(){
         var type = 'png';
@@ -48,19 +51,29 @@
     }
 
     function touchStar(e){
-
+        dowmflag = 1
         // 取得鼠标位置
-        var x = e.touches[0].pageX - canvas.offsetLeft;
-        var y = e.touches[0].pageY - canvas.offsetTop;
+        var x = e.pageX - canvas.offsetLeft;
+        var y = e.pageY - canvas.offsetTop;
 
         drawDot(x,y);
     }
 
-    function touchMove(e){
-        var x = e.touches[0].pageX - canvas.offsetLeft;
-        var y = e.touches[0].pageY - canvas.offsetTop;
+    function stopdraw(e){
+        dowmflag=0;
+        e.stopPropagation();
+        e.preventDefault();
+    }
 
-        drawDot(x,y);
+    function touchMove(e){
+
+
+        if(dowmflag == 1){
+            var x = e.pageX - canvas.offsetLeft;
+            var y = e.pageY - canvas.offsetTop;
+            drawDot(x,y);
+        }
+
     }
 
     function drawDot(x,y){
